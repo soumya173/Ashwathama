@@ -1,0 +1,2 @@
+1. Simple conversation
+2. Chat support to guide customer for basic queries
