@@ -1,8 +1,5 @@
-import re
-import sqlite3
-from collections import Counter
-from string import punctuation
-from math import sqrt
+from Backend import *
+import tkinter as tk
 
 # TODO : Clean up the data base. Delete rows which are not used much to prevent the data base to grow unnecessarily.
 # TODO : Need a filter for abusive words. And prevent Ashwathama to learn those words.
@@ -12,100 +9,63 @@ from math import sqrt
 # TODO : Implement logging for debugging purpose.
 # TODO (FUTURE) : Add support for mails. Ashwathama will send a mail to support team if it's unable solve the query.
 # TODO (FUTURE) : Take review after chat is over. Review will be important for improving Ashwathama.
-# TODO (FUTURE) : Implement a UI for Ashwathama.
+# TODO : Add scrollbar to improve UI
+# TODO : Delete older messages to clean up the UI
+# TODO : Improve colors and fonts
 
-class Ashwathama:
-    """Ashwathama, a chat bot who can give basic support to customer and learn new reply while chatting"""
-    def __init__(self):
-        """initialize the connection to the database"""
-        self.connection = sqlite3.connect('chatbot.sqlite')
-        self.cursor = self.connection.cursor()
+class Frontend(object):
+    """docstring for Frontend"""
+    def __init__(self, title):
 
-        self.bot_msg = 'Hello'
+        # Root window config
+        self.root = tk.Tk()
+        self.root.title(title)
+        self.root.geometry("350x200")
 
-        self.init_db()
+        # Messages wrapper frame config
+        self.messageframe = tk.Frame(self.root)
+        self.messageframe.pack(side=tk.TOP)
 
-    def init_db(self):
-        """create the tables needed by the program"""
-        create_table_request_list = [
-            'CREATE TABLE IF NOT EXISTS words(word TEXT UNIQUE)',
-            'CREATE TABLE IF NOT EXISTS sentences(sentence TEXT UNIQUE, used INT NOT NULL DEFAULT 0)',
-            'CREATE TABLE IF NOT EXISTS associations (word_id INT NOT NULL, sentence_id INT NOT NULL, weight REAL NOT NULL)',
-        ]
-        for create_table_request in create_table_request_list:
-            try:
-                self.cursor.execute(create_table_request)
-            except:
-                pass
+        # Input box wrapper frame config
+        self.inputframe = tk.Frame(self.root)
+        self.inputframe.pack(side=tk.BOTTOM, fill=tk.X)
 
-    def get_id(self, entityName, text):
-        """Retrieve an entity's unique ID from the database, given its associated text.
-        If the row is not already present, it is inserted.
-        The entity can either be a sentence or a word."""
-        tableName = entityName + 's'
-        columnName = entityName
-        self.cursor.execute('SELECT rowid FROM ' + tableName + ' WHERE ' + columnName + ' = ?', (text,))
-        row = self.cursor.fetchone()
-        if row:
-            return row[0]
+        # Input box config
+        self.userinputentry = tk.Entry(self.inputframe, justify=tk.CENTER)
+        self.userinputentry.pack(fill=tk.X)
+
+        # Submit button config
+        self.submitbutton = tk.Button(self.inputframe, text="Send", command=self.getreply, padx=10, pady=5)
+        self.submitbutton.pack()
+
+        self.userinputentry.focus()
+        self.root.mainloop()
+
+    def on_configure(self, event):
+        # update scrollregion after starting 'mainloop'
+        # when all widgets are in canvas
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+
+    def printmessage(self, msg, alignment):
+        text = tk.StringVar()
+        if alignment == 'right':
+            newmsg = tk.Label(self.messageframe, textvariable=text, padx=5, pady=2, anchor='e', width=500)
         else:
-            self.cursor.execute('INSERT INTO ' + tableName + ' (' + columnName + ') VALUES (?)', (text,))
-            return self.cursor.lastrowid
+            newmsg = tk.Label(self.messageframe, textvariable=text, padx=5, pady=2, anchor='w', width=500)
+        text.set(msg)
+        newmsg.pack(fill=tk.X)
 
-    def get_words(self, text):
-        """Retrieve the words present in a given string of text.
-        The return value is a list of tuples where the first member is a lowercase word,
-        and the second member the number of time it is present in the text."""
-        wordsRegexpString = '(?:\w+|[' + re.escape(punctuation) + ']+)'
-        wordsRegexp = re.compile(wordsRegexpString)
-        wordsList = wordsRegexp.findall(text.lower())
-        return Counter(wordsList).items()
+    def getreply(self):
+        usertextstr = self.userinputentry.get()
+        self.printmessage(usertextstr, "right")
 
-    def clean_tables(self):
-        """This will clear all the table data required for chat.
-        WARNING : Do not call this method unless you want to reset everything. This is dangerous."""
-        truncate_table_request_list = [
-            'TRUNCATE TABLE words',
-            'TRUNCATE TABLE sentences',
-            'TRUNCATE TABLE associations',
-        ]
-        for truncate_table_request in truncate_table_request_list:
-            try:
-                self.cursor.execute(truncate_table_request)
-            except:
-                pass
+        backend = Backend()
+        replytext = backend.process(usertextstr)
 
-    def process(self, input_str):
-        # store the association between the bot's message words and the user's response
-        words = self.get_words(self.bot_msg)
-        words_length = sum([n * len(word) for word, n in words])
-        sentence_id = self.get_id('sentence', input_str)
-        for word, n in words:
-            word_id = self.get_id('word', word)
-            weight = sqrt(n / float(words_length))
-            self.cursor.execute('INSERT INTO associations VALUES (?, ?, ?)', (word_id, sentence_id, weight))
-        self.connection.commit()
+        self.userinputentry.delete(0, 'end')
+        self.userinputentry.focus()
 
-        # retrieve the most likely answer from the database
-        self.cursor.execute('CREATE TEMPORARY TABLE results(sentence_id INT, sentence TEXT, weight REAL)')
-        words = self.get_words(input_str)
-        words_length = sum([n * len(word) for word, n in words])
-        for word, n in words:
-            weight = sqrt(n / float(words_length))
-            self.cursor.execute('INSERT INTO results SELECT associations.sentence_id, sentences.sentence, ?*associations.weight/(4+sentences.used) FROM words INNER JOIN associations ON associations.word_id=words.rowid INNER JOIN sentences ON sentences.rowid=associations.sentence_id WHERE words.word=?', (weight, word,))
+        self.printmessage(replytext, "left")
 
-        # if matches were found, give the best one
-        self.cursor.execute('SELECT sentence_id, sentence, SUM(weight) AS sum_weight FROM results GROUP BY sentence_id ORDER BY sum_weight DESC LIMIT 1')
-        row = self.cursor.fetchone()
-        self.cursor.execute('DROP TABLE results')
-
-        # otherwise, just randomly pick one of the least used sentences
-        if row is None:
-            self.cursor.execute('SELECT rowid, sentence FROM sentences WHERE used = (SELECT MIN(used) FROM sentences) ORDER BY RANDOM() LIMIT 1')
-            row = self.cursor.fetchone()
-
-        # tell the database the sentence has been used once more, and prepare the sentence
-        self.bot_msg = row[1]
-        self.cursor.execute('UPDATE sentences SET used=used+1 WHERE rowid=?', (row[0],))
-
-        return self.bot_msg
+if __name__ == '__main__':
+    fr = Frontend("Ashwathama")
