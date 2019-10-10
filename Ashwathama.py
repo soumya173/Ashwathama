@@ -26,6 +26,11 @@ class Frontend(object):
         self.messageframe = tk.Frame(self.root)
         self.messageframe.pack(side=tk.TOP)
 
+        self.bottext = tk.StringVar()
+        self.usertext = tk.StringVar()
+        self.botmsg = tk.Label(self.messageframe, textvariable=self.bottext, padx=5, pady=2, anchor='w', width=500)
+        self.usermsg = tk.Label(self.messageframe, textvariable=self.usertext, padx=5, pady=2, anchor='e', width=500)
+
         # Input box wrapper frame config
         self.inputframe = tk.Frame(self.root)
         self.inputframe.pack(side=tk.BOTTOM, fill=tk.X)
@@ -39,6 +44,7 @@ class Frontend(object):
         self.submitbutton.pack()
 
         self.userinputentry.focus()
+        self.root.bind('<Return>', self.getreply)
         self.root.mainloop()
 
     def on_configure(self, event):
@@ -47,15 +53,19 @@ class Frontend(object):
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
     def printmessage(self, msg, alignment):
-        text = tk.StringVar()
+        # text = tk.StringVar()
         if alignment == 'right':
-            newmsg = tk.Label(self.messageframe, textvariable=text, padx=5, pady=2, anchor='e', width=500)
+            # newmsg = tk.Label(self.messageframe, textvariable=text, padx=5, pady=2, anchor='e', width=500)
+            self.usertext.set(msg)
+            self.usermsg.pack(fill=tk.X)
         else:
-            newmsg = tk.Label(self.messageframe, textvariable=text, padx=5, pady=2, anchor='w', width=500)
-        text.set(msg)
-        newmsg.pack(fill=tk.X)
+            # newmsg = tk.Label(self.messageframe, textvariable=text, padx=5, pady=2, anchor='w', width=500)
+            self.bottext.set(msg)
+            self.botmsg.pack(fill=tk.X)
+        # text.set(msg)
+        # newmsg.pack(fill=tk.X)
 
-    def getreply(self):
+    def getreply(self, event):
         usertextstr = self.userinputentry.get()
         self.printmessage(usertextstr, "right")
 

@@ -36,7 +36,7 @@ class Backend(object):
 	    self.cursor.execute('SELECT rowid FROM ' + tableName + ' WHERE ' + columnName + ' = ?', (text,))
 	    row = self.cursor.fetchone()
 	    if row:
-	        return row[0]
+	    	return row[0]
 	    else:
 	        self.cursor.execute('INSERT INTO ' + tableName + ' (' + columnName + ') VALUES (?)', (text,))
 	        return self.cursor.lastrowid
