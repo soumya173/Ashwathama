@@ -3,6 +3,18 @@ import sqlite3
 from collections import Counter
 from string import punctuation
 from math import sqrt
+from nltk.corpus import words as nltk_words
+
+#####################################################
+# Installation Notes for nltk.corpus.words
+#
+# Step 1 : First install nltk
+# 	- pip install nltk
+# Step 2 : Enter into python shell
+# 	- python
+# Step 3 : inside python shell download english words from nktl library (this step requires internet connection)
+# 	- nltk.download('words')
+#
 
 class Backend(object):
 	def __init__(self):
@@ -64,9 +76,33 @@ class Backend(object):
 	        except:
 	            pass
 
+	def basic_validation(self, words):
+		# Get the list of valid words from nltk dictionary
+		set_of_words = set(nltk_words.words())
+
+		for word in words:
+			# Check if the input word is a valid english word
+			if word not in set_of_words:
+				return False
+
+		return True
+
+	def process_known_questions(self, question):
+		pass
+
 	def process(self, input_str):
 	    # store the association between the bot's message words and the user's response
 	    words = self.get_words(self.bot_msg)
+
+	    # If input word is not valid, stop processing
+	    if not self.basic_validation(words) :
+	    	self.bot_msg = "Please enter valid english words."
+	    	return self.bot_msg
+
+	    # Check for basic questions, if known answer immediately
+	    if self.process_known_questions(input_str) :
+	    	return self.bot_msg
+
 	    words_length = sum([n * len(word) for word, n in words])
 	    sentence_id = self.get_id('sentence', input_str)
 	    for word, n in words:
