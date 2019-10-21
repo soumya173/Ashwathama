@@ -94,9 +94,9 @@ class Backend(object):
         return True
 
     def filter_punctuation(self, inp_str):
-        input_str.replace(".", "")
-        input_str.replace(",", "")
-        input_str.replace("?", "")
+        inp_str.replace(".", "")
+        inp_str.replace(",", "")
+        inp_str.replace("?", "")
 
         return inp_str
 
@@ -109,23 +109,23 @@ class Backend(object):
 
         if question in greetings_text:
             self.bot_msg = random.choice(greetings_resp)
-            return
+            return True
 
         if re.match("^how are.*", question):
             self.bot_msg = random.choice(["Everything's fine", "Absolutely fine"])
-            return
+            return True
 
         if re.match("what is .* name$", question):
             self.bot_msg = "My name is Ashwathama"
-            return
+            return True
 
         if re.match("who (created|made) you", question):
             self.bot = "Some developer :)"
-            return
+            return True
 
         if re.match("college fees", question) or re.match("college department", question) or re.match("college faculty", question) or re.match("college library", question):
             self.bot = "Please find all these info in the official college website"
-            return
+            return True
 
     def process(self, input_str):
         inp_words = input_str.split(" ")
