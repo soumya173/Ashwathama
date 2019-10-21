@@ -65,7 +65,7 @@ class Frontend(object):
         # text.set(msg)
         # newmsg.pack(fill=tk.X)
 
-    def getreply(self):
+    def getreply(self, event=None):
         usertextstr = self.userinputentry.get()
         self.printmessage(usertextstr, "right")
 

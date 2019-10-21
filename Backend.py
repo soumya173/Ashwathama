@@ -94,9 +94,9 @@ class Backend(object):
         return True
 
     def filter_punctuation(self, inp_str):
-        inp_str.replace(".", "")
-        inp_str.replace(",", "")
-        inp_str.replace("?", "")
+        inp_str = inp_str.replace(".", "")
+        inp_str = inp_str.replace(",", "")
+        inp_str = inp_str.replace("?", "")
 
         return inp_str
 
@@ -111,21 +111,43 @@ class Backend(object):
             self.bot_msg = random.choice(greetings_resp)
             return True
 
-        if re.match("^how are.*", question):
+        if re.search("how are.*", question) != None:
             self.bot_msg = random.choice(["Everything's fine", "Absolutely fine"])
             return True
 
-        if re.match("what is .* name$", question):
+        if re.search('what is.*name', question) != None:
             self.bot_msg = "My name is Ashwathama"
             return True
 
-        if re.match("who (created|made) you", question):
-            self.bot = "Some developer :)"
+        if re.search('who (created|made) you', question) != None:
+            self.bot_msg = "Some developer :)"
             return True
 
-        if re.match("college fees", question) or re.match("college department", question) or re.match("college faculty", question) or re.match("college library", question):
-            self.bot = "Please find all these info in the official college website"
+        if re.search('what is your task', question) != None:
+            self.bot_msg = "Provide you the required info"
             return True
+
+        if re.search('how can you help me', question) != None:
+            self.bot_msg = "You can ask questions, I'll try to provide you answers"
+            return True
+
+        if re.search('college fees', question) != None or re.search('college department', question) != None or re.search('college faculty', question) != None or re.search('college library', question) != None or re.search('college info', question) != None or re.search('college name', question) != None or re.search('my college', question) != None:
+            self.bot_msg = "Please find all these info in the official college website"
+            return True
+
+        if re.search('where you studied', question) != None:
+            self.bot_msg = "Python library"
+            return True
+
+        if re.search('where are you from', question) != None:
+            self.bot_msg = "I'm from your PC"
+            return True
+
+        if re.search('why you born', question) != None:
+            self.bot_msg = "To make the world a better place"
+            return True
+
+        return False
 
     def process(self, input_str):
         inp_words = input_str.split(" ")
