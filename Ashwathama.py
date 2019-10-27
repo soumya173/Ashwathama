@@ -1,5 +1,8 @@
 from Backend import *
 import tkinter as tk
+import logging
+LOG_FILENAME = './Ashwathama_Logs.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
 # TODO : Clean up the data base. Delete rows which are not used much to prevent the data base to grow unnecessarily.
 # TODO : Need a filter for abusive words. And prevent Ashwathama to learn those words.
@@ -7,6 +10,8 @@ import tkinter as tk
 # TODO : Add a default reply if the query reply is not found. Now it'll pick a random reply from database.
 # TODO : Split process method into multiple methods. This will help to maintain the code.
 # TODO : Implement logging for debugging purpose.
+# TODO : LOGGING FILENAME should have timestamp.
+# TODO : Timestamp for everylog inside the LOGGING FILENAME.
 # TODO (FUTURE) : Add support for mails. Ashwathama will send a mail to support team if it's unable solve the query.
 # TODO (FUTURE) : Take review after chat is over. Review will be important for improving Ashwathama.
 # TODO : Add scrollbar to improve UI
