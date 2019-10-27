@@ -4,6 +4,12 @@ import sqlite3
 from collections import Counter
 from string import punctuation
 from math import sqrt
+import logging
+LOG_FILENAME = './Ashwathama_Logs.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+
+
+# Example log "logging.error("Anything you need to print")
 # from nltk.corpus import words as nltk_words
 # from nltk.corpus import wordnet
 
